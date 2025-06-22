@@ -16,7 +16,7 @@ import ClickableAvatar from "../components/ClickableAvatar";
 import ClickableUsername from "../components/ClickableUsername";
 import LikesModal from "../components/LikesModal";
 import { useAuth } from "../contexts/AuthContext";
-import { getImageUrl, postsAPI } from "../utils/api";
+import { getImageUrl, handleApiError, postsAPI } from "../utils/api";
 
 export default function PostDetails() {
   const { postId } = useParams();
@@ -45,7 +45,8 @@ export default function PostDetails() {
         setError("");
       } catch (err) {
         console.error("Failed to fetch post", err);
-        setError("Post not found or an error occurred.");
+        const errorInfo = handleApiError(err);
+        setError(errorInfo.message);
       } finally {
         setLoading(false);
       }
@@ -195,11 +196,50 @@ export default function PostDetails() {
   };
 
   if (loading) {
-    return <div className="text-center p-10">Loading post...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading post...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center p-10 text-red-500">{error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="text-red-600 text-4xl mb-4">⚠️</div>
+            <h2 className="text-lg font-semibold text-red-800 mb-2">
+              Post Not Found
+            </h2>
+            <p className="text-red-700 text-sm mb-4">{error}</p>
+            {error.includes("localhost") && (
+              <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                <p className="font-medium mb-1">To view this post:</p>
+                <ol className="text-left list-decimal list-inside space-y-1">
+                  <li>Ensure the backend server is running locally</li>
+                  <li>
+                    Check that it's accessible on{" "}
+                    <code className="bg-blue-100 px-1 rounded">
+                      localhost:3000
+                    </code>
+                  </li>
+                </ol>
+              </div>
+            )}
+            <Link
+              to="/"
+              className="mt-4 inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            >
+              Go Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!post) {

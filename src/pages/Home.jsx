@@ -3,7 +3,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import LoginPopup from "../components/LoginPopup";
 import Post from "../components/Post";
 import { useAuth } from "../contexts/AuthContext";
-import { postsAPI } from "../utils/api";
+import { handleApiError, postsAPI } from "../utils/api";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -37,7 +37,8 @@ export default function Home() {
       setHasMore(response.length === 10);
       setPage(pageNum);
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to load posts");
+      const errorInfo = handleApiError(error);
+      setError(errorInfo.message);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -151,8 +152,46 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-600">{error}</p>
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="text-red-600 text-4xl mb-4">⚠️</div>
+            <h2 className="text-lg font-semibold text-red-800 mb-2">
+              Connection Error
+            </h2>
+            <p className="text-red-700 text-sm mb-4">{error}</p>
+            {error.includes("localhost") && (
+              <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                <p className="font-medium mb-1">To use this application:</p>
+                <ol className="text-left list-decimal list-inside space-y-1">
+                  <li>Clone the backend repository</li>
+                  <li>
+                    Run{" "}
+                    <code className="bg-blue-100 px-1 rounded">
+                      npm install
+                    </code>
+                  </li>
+                  <li>
+                    Start the server with{" "}
+                    <code className="bg-blue-100 px-1 rounded">npm start</code>
+                  </li>
+                  <li>
+                    Ensure it's running on{" "}
+                    <code className="bg-blue-100 px-1 rounded">
+                      localhost:3000
+                    </code>
+                  </li>
+                </ol>
+              </div>
+            )}
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

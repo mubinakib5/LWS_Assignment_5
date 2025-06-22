@@ -1,6 +1,12 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3000/api";
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+// Check if we're in production (Vercel) and backend is not accessible
+const isProduction = import.meta.env.PROD;
+const isLocalBackend = API_BASE_URL.includes("localhost");
 
 // Create axios instance
 const api = axios.create({
@@ -8,6 +14,8 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // Add timeout to prevent hanging requests
+  timeout: 10000,
 });
 
 // Flag to prevent multiple refresh requests
@@ -127,7 +135,56 @@ api.interceptors.response.use(
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return "/assets/avatar.jpg";
   if (imagePath.startsWith("http")) return imagePath;
-  return `http://localhost:3000/${imagePath}`;
+  // Use the same base URL as the API
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  return `${baseUrl}/${imagePath}`;
+};
+
+// Helper function to check if backend is accessible
+export const checkBackendAccess = async () => {
+  try {
+    await api.get("/posts?page=1&limit=1");
+    return true;
+  } catch (error) {
+    console.warn("Backend not accessible:", error.message);
+    return false;
+  }
+};
+
+// Enhanced error handling for production
+export const handleApiError = (error) => {
+  if (isProduction && isLocalBackend) {
+    // In production with local backend, show a helpful message
+    return {
+      error: true,
+      message:
+        "This application requires the backend to be running locally. Please ensure the backend server is started on localhost:3000.",
+      details: error.message,
+    };
+  }
+
+  if (error.response) {
+    // Server responded with error status
+    return {
+      error: true,
+      message: error.response.data?.message || "Server error occurred",
+      status: error.response.status,
+    };
+  } else if (error.request) {
+    // Network error
+    return {
+      error: true,
+      message: "Network error - unable to connect to server",
+      details: error.message,
+    };
+  } else {
+    // Other error
+    return {
+      error: true,
+      message: "An unexpected error occurred",
+      details: error.message,
+    };
+  }
 };
 
 // Auth API methods

@@ -10,6 +10,7 @@ import CreatePost from "./pages/CreatePost";
 import EditProfile from "./pages/EditProfile";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
 import PostDetails from "./pages/PostDetails";
 import Profile from "./pages/Profile";
@@ -124,11 +125,9 @@ function App() {
             <Route
               path="/post/:postId"
               element={
-                <ProtectedRoute>
-                  <Layout>
-                    <PostDetails />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <PostDetails />
+                </Layout>
               }
             />
 
@@ -144,7 +143,7 @@ function App() {
             />
 
             {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </Router>
