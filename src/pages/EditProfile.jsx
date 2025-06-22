@@ -38,15 +38,36 @@ export default function EditProfile() {
   // Check if user just registered (redirected from registration)
   const isNewUser = location.state?.fromRegistration;
 
+  const testAvatarUrl = async (url) => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      console.log("Avatar URL test result:", response.status, response.ok);
+      return response.ok;
+    } catch (error) {
+      console.log("Avatar URL test failed:", error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user) {
+      console.log("EditProfile: User data received:", user);
+      console.log("EditProfile: User avatar:", user.avatar);
+      const avatarUrl = getImageUrl(user.avatar);
+      console.log("EditProfile: Generated avatar URL:", avatarUrl);
+
+      // Test if the avatar URL is accessible
+      if (user.avatar && !avatarUrl.includes("/assets/avatar.jpg")) {
+        testAvatarUrl(avatarUrl);
+      }
+
       setFormData({
         name: user.fullName || "",
         bio: user.bio || "",
         website: user.website || "",
         gender: user.gender || "",
       });
-      setAvatarPreview(user.avatar || "");
+      setAvatarPreview("");
     }
   }, [user]);
 
@@ -248,11 +269,39 @@ export default function EditProfile() {
               <div className="relative">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300">
                   <img
+                    key={`avatar-${user?._id}-${user?.avatar}`}
                     src={
-                      avatarPreview ? avatarPreview : getImageUrl(user?.avatar)
+                      avatarPreview
+                        ? avatarPreview
+                        : user?.avatar
+                        ? getImageUrl(user.avatar)
+                        : "/assets/avatar.jpg"
                     }
                     alt="Profile"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.log("Avatar load error for:", user?.avatar);
+                      console.log("Attempted URL:", e.target.src);
+                      console.log("Current src after error:", e.target.src);
+
+                      // Only fallback if we're not already showing the default
+                      // and if the error is actually a network/loading error
+                      if (
+                        !e.target.src.includes("/assets/avatar.jpg") &&
+                        !e.target.src.includes("data:") &&
+                        user?.avatar
+                      ) {
+                        console.log("Falling back to default avatar");
+                        e.target.src = "/assets/avatar.jpg";
+                      } else {
+                        console.log(
+                          "Not falling back - already default or no user avatar"
+                        );
+                      }
+                    }}
+                    onLoad={(e) => {
+                      console.log("Avatar loaded successfully:", e.target.src);
+                    }}
                   />
                 </div>
                 <label className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 cursor-pointer hover:bg-blue-600">
@@ -270,6 +319,14 @@ export default function EditProfile() {
                   Upload a new profile picture
                 </p>
                 <p className="text-xs text-gray-500">JPG, PNG up to 5MB</p>
+                {user?.avatar && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Current: {user.avatar}
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  User ID: {user?._id}
+                </p>
               </div>
             </div>
           </div>

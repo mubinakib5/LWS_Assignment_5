@@ -17,6 +17,10 @@ export default function ClickableAvatar({
             src={getImageUrl(user?.avatar)}
             alt={`${user?.name || "User"}'s avatar`}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.log("ClickableAvatar load error:", e.target.src);
+              e.target.src = "/assets/avatar.jpg";
+            }}
           />
         )}
       </div>
@@ -33,6 +37,10 @@ export default function ClickableAvatar({
           src={getImageUrl(user.avatar)}
           alt={`${user.name || "User"}'s avatar`}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            console.log("ClickableAvatar load error:", e.target.src);
+            e.target.src = "/assets/avatar.jpg";
+          }}
         />
       )}
     </Link>

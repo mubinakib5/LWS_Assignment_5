@@ -156,6 +156,10 @@ export default function Profile() {
                 src={getImageUrl(user.avatar)}
                 alt="Profile picture"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.log("Profile avatar load error:", e.target.src);
+                  e.target.src = "/assets/avatar.jpg";
+                }}
               />
             </div>
           </div>

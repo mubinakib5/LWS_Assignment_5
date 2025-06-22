@@ -133,11 +133,36 @@ api.interceptors.response.use(
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath) => {
-  if (!imagePath) return "/assets/avatar.jpg";
-  if (imagePath.startsWith("http")) return imagePath;
-  // Use the same base URL as the API
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-  return `${baseUrl}/${imagePath}`;
+  console.log("getImageUrl called with:", imagePath);
+  console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+  console.log("Current location:", window.location.href);
+
+  if (!imagePath) {
+    console.log("No image path provided, using default avatar");
+    return "/assets/avatar.jpg";
+  }
+
+  if (imagePath.startsWith("http")) {
+    console.log("Image path is already a full URL:", imagePath);
+    return imagePath;
+  }
+
+  // For images, always use the backend URL (not the frontend URL)
+  // If VITE_API_URL is set, use it without /api suffix
+  // Otherwise, default to localhost:3000
+  let baseUrl;
+  if (import.meta.env.VITE_API_URL) {
+    baseUrl = import.meta.env.VITE_API_URL.replace("/api", "");
+    console.log("Using VITE_API_URL for baseUrl:", baseUrl);
+  } else {
+    // Always use localhost:3000 for local development
+    baseUrl = "http://localhost:3000";
+    console.log("Using default localhost:3000 for baseUrl:", baseUrl);
+  }
+
+  const fullUrl = `${baseUrl}/${imagePath}`;
+  console.log("Generated image URL:", fullUrl);
+  return fullUrl;
 };
 
 // Helper function to check if backend is accessible

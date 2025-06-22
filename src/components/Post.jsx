@@ -114,6 +114,10 @@ export default function Post({
             src={getImageUrl(post.user?.avatar)}
             className="w-full h-full object-cover"
             alt={post.user?.name}
+            onError={(e) => {
+              console.log("Post avatar load error:", e.target.src);
+              e.target.src = "/assets/avatar.jpg";
+            }}
           />
         </ClickableAvatar>
         <div className="ml-2">
@@ -223,6 +227,10 @@ export default function Post({
                   src={getImageUrl(like.avatar)}
                   alt="User avatar"
                   className="w-6 h-6 rounded-full"
+                  onError={(e) => {
+                    console.log("Like avatar load error:", e.target.src);
+                    e.target.src = "/assets/avatar.jpg";
+                  }}
                 />
               ))}
             </div>

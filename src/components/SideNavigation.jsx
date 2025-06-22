@@ -156,6 +156,10 @@ export default function SideNavigation() {
                 src={getImageUrl(user?.avatar)}
                 alt="User avatar"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.log("SideNav avatar load error:", e.target.src);
+                  e.target.src = "/assets/avatar.jpg";
+                }}
               />
             </div>
             <div className="ml-2">
